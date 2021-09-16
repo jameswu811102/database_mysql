@@ -1,0 +1,201 @@
+-- CHAPTER-1
+-- 創建資料庫
+-- 通常非關鍵字會用反引號``包起來
+CREATE DATABASE `sql_tutorial`;
+CREATE DATABASE `database`;
+
+SHOW DATABASES;
+DROP DATABASE `database`;
+DROP DATABASE `sql_tutorial`;
+
+
+-- ===================================================================== --
+-- ===================================================================== --
+
+
+-- CHAPTER-2
+-- 創建表格
+CREATE DATABASE `sql_tutorial`;
+SHOW DATABASES;
+-- 使用某個資料庫
+USE `sql_tutorial`;
+
+-- 資料型態
+-- INT
+-- DECIMAL(總共幾位數, 小數點後要保留幾位)
+-- VARCHAR(最多容納的字元數)
+-- BLOB			   --  Binary Large Object (圖片、影片...等大型檔案)
+-- DATE            -- 'YYYY-MM-DD' 日期
+-- TIMESTAMP	   -- 'YYYY-MM-DD HH:MM:SS' 紀錄時間
+
+-- 正式創建表格
+CREATE TABLE `student`(
+	`student_id` INT,  
+    `name` VARCHAR(30),
+    `major` VARCHAR(30),
+    PRIMARY KEY(`student_id`)
+);
+
+-- 查看建立好的表格
+DESCRIBE `student`;
+
+-- 刪除表格
+DROP TABLE `student`;
+
+-- 新增表格的欄位(屬性)
+ALTER TABLE `student` ADD `gpa` DECIMAL(3, 2);
+
+-- 刪除表格的欄位(屬性)
+ALTER TABLE `student` DROP COLUMN `gpa`;
+
+
+-- ===================================================================== --
+-- ===================================================================== --
+
+
+-- CHAPTER-3
+-- 開始存入資料到表格中 (插入資料到表格中)
+
+INSERT INTO `student` VALUES(1, '小白', '歷史');
+
+-- 實際查找看看 (Query)
+SELECT * FROM `student`;
+
+-- 繼續插入資料 (注意，PRIMARY KEY不能重複)
+-- 若沒有對該欄位增加值，則會預設以NULL帶入
+INSERT INTO `student` VALUES(2, '小黑', '生物');
+INSERT INTO `student` VALUES(3, '小綠', NULL);
+INSERT INTO `student` (`name`, `major`, `student_id`) VALUES('小白', '英語', 4);
+INSERT INTO `student` (`student_id`, `major`) VALUES(5, '體育');
+
+
+-- ===================================================================== --
+-- ===================================================================== --
+
+
+-- CHAPTER-4
+-- 開始增加constrains (限制、約束)
+-- 如在創建表格時，限制欄位值(屬性值)不可以是NULL
+
+-- 先把之前練習的student表格刪掉
+DROP TABLE `student`;
+
+-- 增加限制條件來重新建立student表格 (一個屬性只能一種條件)
+CREATE TABLE `student`(
+	`student_id` INT AUTO_INCREMENT,  -- 會自動 +1
+    `name` VARCHAR(30) NOT NULL,
+    `major` VARCHAR(30) UNIQUE,
+    `e-mail` VARCHAR(50) DEFAULT 'None',
+    PRIMARY KEY(`student_id`)
+);
+
+-- 一樣新增資料 (但注意，這次的表格有限制)
+INSERT INTO `student` VALUES(1, NULL, '英語', '1@test.com');  -- 這個會執行失敗 (name欄位有設定不可以是NULL)
+INSERT INTO `student` VALUES(1, '小白', '英語', '1@test.com');  -- 將NULL修正後就可以
+
+-- 新增第二筆
+INSERT INTO `student` VALUES(2, '小黑', '英語', '2@test.com');  -- 會出錯 (major欄位有設定UNIQUE的限制)
+INSERT INTO `student` VALUES(2, '小黑', '國語', '2@test.com');  -- 將e-mail修正
+
+-- DEFAULT限制的實際成效 (注意，寫法比較特殊，要指定欄位一個一個插入值)
+INSERT INTO `student` (`student_id`, `name`, `major`) VALUES(3, '小黃', '體育');  -- 當沒輸入e-mail時，會以欄位限制(DEFAULT預設值)來插入值
+
+-- 來測試看看若沒有指派student_id，PRIMARY KEY的AUTO INCREMENT是否會起作用 (也是需要指定欄位一個一個插入值)
+INSERT INTO `student` (`name`, `major`) VALUES('小綠', '數學');  -- 會自己新增應該對應到的student_id
+
+select * from `student`;
+
+
+-- ===================================================================== --
+-- ===================================================================== --
+
+
+-- CHAPTER-5
+-- 修改 & 刪除資料 (UPDATE & DELETE)
+
+# 先將SQL Workbench預設的更新模式關閉
+SET SQL_SAFE_UPDATES = 0;
+
+-- 先刪除原本已經好的student表格以做新的練習
+DROP TABLE `student`;
+
+-- 重新建立student表格
+CREATE TABLE `student`(
+	`student_id` INT AUTO_INCREMENT,
+    `name` VARCHAR(30),
+    `major` VARCHAR(30),
+    `score` INT,
+    PRIMARY KEY(`student_id`)
+);
+
+-- 先添加幾筆測試用資料
+INSERT INTO `student` (`name`, `major`, `score`) VALUES('小白', '英語', 95);
+INSERT INTO `student` (`name`, `major`, `score`) VALUES('小黑', '國語', 92);
+INSERT INTO `student` (`name`, `major`, `score`) VALUES('小藍', '英語', 93);
+INSERT INTO `student` (`name`, `major`, `score`) VALUES('小黃', '資訊', 91);
+INSERT INTO `student` (`name`, `major`, `score`) VALUES('小綠', '工程', 97);
+
+
+-- 想修改欄位裡面的內容 (先設定好要變更的內容，在設定哪些資料要變更的條件判斷)
+UPDATE `student` SET `major` = '英語文學' WHERE `major` = '英語';
+UPDATE `student` SET `major` = '生物' WHERE `student_id` = 2;
+UPDATE `student` SET `major` = '資工' WHERE `major` = '資訊' OR `major` = '工程';
+
+-- 想刪除特定的一筆資料 (一個Row)
+DELETE FROM `student` WHERE `student_id` = 3;
+DELETE FROM `student` WHERE `score` < 92;
+DELETE FROM `student` WHERE `name` = '小藍' AND `major` = '英語文學';
+DELETE FROM `student`;
+
+SELECT * FROM `student`;
+
+
+-- ===================================================================== --
+-- ===================================================================== --
+
+
+-- CHAPTER-6
+-- 取得資料 (Query)
+
+-- 先刪除表格，然後再建立幾筆資料用來測試
+DROP TABLE `student`;
+CREATE TABLE `student`(
+	`student_id` INT AUTO_INCREMENT, 
+    `name` VARCHAR(30),
+    `major` VARCHAR(30),
+    `score` INT,
+    PRIMARY KEY(`student_id`)
+);
+
+INSERT INTO `student` (`name`, `major`, `score`) VALUES('小白', '英語', 95);
+INSERT INTO `student` (`name`, `major`, `score`) VALUES('小黑', '國語', 92);
+INSERT INTO `student` (`name`, `major`, `score`) VALUES('小藍', '英語', 93);
+INSERT INTO `student` (`name`, `major`, `score`) VALUES('小黃', '資訊', 91);
+INSERT INTO `student` (`name`, `major`, `score`) VALUES('小綠', '工程', 97);
+
+
+-- SELECT 語法使用 (*號表示取得所有屬性)
+-- 若要取得多個屬性，中間使用 " , " 隔開，而不用用AND
+SELECT * FROM `student`;
+SELECT `name` FROM `student`;
+SELECT `name`, `major` FROM `student`;
+
+-- 也可以用 ORDER BY 來排序 (升冪 or 降冪)
+SELECT * FROM `student` ORDER BY `score` ASC;
+SELECT * FROM `student` ORDER BY `score` DESC;
+SELECT * FROM `student` ORDER BY `score`, `student_id` ASC;
+
+-- 若資料很多，只想要取得特定筆數資料，則可以使用 LIMIT 來限定取得的資料筆數
+SELECT * FROM `student` ORDER BY `score` DESC LIMIT 3;
+
+-- 另外也可以加上條件判斷
+SELECT * FROM `student` WHERE `score` < 95 AND `major` = '國語';
+SELECT * FROM `student` WHERE `score` < 92 OR `major` = '國語';
+
+-- 不等於的寫法以下兩種都可以
+SELECT * FROM `student` WHERE `score` != 93;
+SELECT * FROM `student` WHERE `score` <> 93;
+
+-- 另外以下兩種寫法實際效果相等
+SELECT * FROM `student` WHERE `major` IN('英語', '資訊');
+SELECT * FROM `student` WHERE `major` = '英語' OR `major` = '資訊';
